@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="createJiraIssue" result-type="Properties" api-version="6.0.0" id="35fb0329-7c27-445d-b244-53b8dbe4b7db" version="0.0.0" allowed-operations="evf" category-name="com.vmware.library.jira">
+  <description><![CDATA[Create issue in JIRA server]]></description>
+  <param n="summary" t="string"><![CDATA[]]></param>
+  <param n="description" t="string"><![CDATA[]]></param>
+  <param n="createIssueTmpl" t="ResourceElement"><![CDATA[]]></param>
+  <param n="jiraHost" t="REST:RESTHost"><![CDATA[]]></param>
+  <param n="projectId" t="string"><![CDATA[]]></param>
+  <param n="reporter" t="string"><![CDATA[]]></param>
+  <param n="issueType" t="string"><![CDATA[]]></param>
+  <param n="label" t="string"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var createIssueBody = createIssueTmpl.getContentAsMimeAttachment().content;
+createIssueBody = createIssueBody.replace('{{summary}}', summary)
+createIssueBody = createIssueBody.replace('{{description}}', description)
+createIssueBody = createIssueBody.replace('{{projectId}}', projectId)
+createIssueBody = createIssueBody.replace('{{reporter}}', reporter)
+createIssueBody = createIssueBody.replace('{{issueType}}', issueType)
+createIssueBody = createIssueBody.replace('{{label}}', label)
+
+System.log(createIssueBody)
+
+var request = jiraHost.createRequest("POST", "/rest/api/2/issue", createIssueBody);
+request.setHeader('content-type' , 'application/json');
+if (jiraHost.authentication.type == "OAuth 2.0") {
+	request.setHeader('Cookie' , 'auth-openid='+jiraHost.authentication.getRawAuthProperty(0))
+}
+System.log("request: " + request.fullUrl);
+var response = request.execute();
+System.log("statusCode: " + response.statusCode);
+System.log("response: " + response.contentAsString);
+result = new Properties();
+result.put("statusCode", response.statusCode);
+result.put("contentLength", response.contentLength);
+result.put("headers", response.getAllHeaders());
+result.put("contentAsString", response.contentAsString);
+
+return result;]]></script>
+</dunes-script-module>

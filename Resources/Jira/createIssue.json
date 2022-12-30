@@ -1,0 +1,19 @@
+{
+    "fields": {
+        "project": {
+            "key": "{{projectId}}"
+        },
+        "summary": "{{summary}}",
+        "issuetype": {
+            "name": "{{issueType}}"
+        },
+        "assignee": {
+            "name": "-1"
+        },
+        "labels": [
+            "{{label}}",
+            "VMwareCAS"
+        ],
+		"description": "{{description}}"
+        }
+}

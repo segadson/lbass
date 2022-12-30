@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item2" object-name="workflow:name=generic" id="5d7b2131-810e-4e10-b277-2d4271aa653c" version="0.0.11" api-version="6.0.0" allowed-operations="evf" restartMode="1" resumeFromFailedMode="0">
+  <display-name><![CDATA[Wait for approval]]></display-name>
+  <position y="50.0" x="100.0"/>
+  <input>
+    <param name="inputProperties" type="Properties"/>
+  </input>
+  <output>
+    <param name="tags" type="Properties"/>
+  </output>
+  <attrib name="jiraProjectKey" type="string" read-only="false" conf-id="2c82c485-826f-48b4-af14-72c3a03df574" conf-key="jiraProjectKey">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <attrib name="jiraHost" type="REST:RESTHost" read-only="false" conf-id="2c82c485-826f-48b4-af14-72c3a03df574" conf-key="jiraHost">
+    <value encoded="n"><![CDATA[dunes://service.dunes.ch/CustomSDKObject?id='3a16f44d-44ea-428c-9eb6-f66ed4e2451e'&dunesName='REST:RESTHost']]></value>
+  </attrib>
+  <attrib name="jiraSummary" type="string" read-only="false">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <attrib name="jiraDescription" type="string" read-only="false">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <attrib name="createIssueTmpl" type="ResourceElement" read-only="false">
+    <value encoded="n"><![CDATA[dunes://service.dunes.ch/ResourceElement?id='a915b56a-fd10-4da4-93b8-83dddcf6e6b2'&dunesName='ResourceElement']]></value>
+  </attrib>
+  <attrib name="createIssueResult" type="Properties" read-only="false">
+    <value encoded="n"><![CDATA[__NULL__]]></value>
+  </attrib>
+  <attrib name="attrTags" type="Properties" read-only="false">
+    <value encoded="n"><![CDATA[__NULL__]]></value>
+  </attrib>
+  <attrib name="jiraKey" type="string" read-only="false">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <attrib name="deploymentId" type="string" read-only="false">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <attrib name="ownerName" type="string" read-only="false">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <attrib name="label" type="string" read-only="false">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <attrib name="jiraIssueTypeId" type="string" read-only="false" conf-id="2c82c485-826f-48b4-af14-72c3a03df574" conf-key="jiraIssueType">
+    <value encoded="n"><![CDATA[10005]]></value>
+  </attrib>
+  <attrib name="reporter" type="string" read-only="false" conf-id="2c82c485-826f-48b4-af14-72c3a03df574" conf-key="jiraReporter">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <workflow-note x="360.0" y="27.272727272727266" w="580.0" h="92.0" color="b0ebebff">
+    <description><![CDATA[JIRA]]></description>
+  </workflow-note>
+  <workflow-item name="item4" type="end" end-mode="0">
+    <position y="45.40909090909091" x="1024.5"/>
+  </workflow-item>
+  <workflow-item name="item6" out-name="item0" type="task">
+    <display-name><![CDATA[prepareJiraSummary]]></display-name>
+    <script encoded="false"><![CDATA[//projectId = inputProperties.get("projectId")
+//deploymentId = inputProperties.get("deploymentId")
+resourceNames = inputProperties.get("resourceNames")
+requestedBy = System.getContext().getParameter("__metadata_userName")
+reporter = System.getContext().getParameter("__metadata_userName")
+jiraSummary = "VMware Cloud Automation Services Request: " + resourceNames;
+//jiraSummary = hostName
+
+jiraDescription = "Requester : " +  requestedBy ;
+label = "vRA_Cloud"
+]]></script>
+    <in-binding>
+      <bind name="inputProperties" type="Properties" export-name="inputProperties"/>
+      <bind name="ownerName" type="string" export-name="ownerName"/>
+      <bind name="jiraIssueTypeId" type="string" export-name="jiraIssueTypeId"/>
+    </in-binding>
+    <out-binding>
+      <bind name="jiraSummary" type="string" export-name="jiraSummary"/>
+      <bind name="jiraDescription" type="string" export-name="jiraDescription"/>
+      <bind name="reporter" type="string" export-name="reporter"/>
+      <bind name="label" type="string" export-name="label"/>
+    </out-binding>
+    <position y="55.40909090909091" x="364.5"/>
+  </workflow-item>
+  <workflow-item name="item7" out-name="item1" type="task">
+    <display-name><![CDATA[Issue created?]]></display-name>
+    <script encoded="false"><![CDATA[if (createIssueResult.get("statusCode") == 201) {
+ issue = JSON.parse(createIssueResult.get("contentAsString"))
+ jiraKey = issue.key
+ // Tag provisionied resources with approval JIRA ID 
+ attrTags  = inputProperties.get("tags")
+ attrTags.put("jiraKey", jiraKey )
+ tags = attrTags;
+ System.log("Issue created " + jiraKey)
+} else {
+ System.error("Failed to create JIRA issue! " + createIssueResult.get("contentAsString"))
+ throw "Failed to create JIRA issue! " + createIssueResult.get("contentAsString")
+}]]></script>
+    <in-binding>
+      <bind name="createIssueResult" type="Properties" export-name="createIssueResult"/>
+      <bind name="attrTags" type="Properties" export-name="attrTags"/>
+      <bind name="inputProperties" type="Properties" export-name="inputProperties"/>
+    </in-binding>
+    <out-binding>
+      <bind name="tags" type="Properties" export-name="tags"/>
+      <bind name="jiraKey" type="string" export-name="jiraKey"/>
+    </out-binding>
+    <position y="55.40909090909091" x="684.5"/>
+  </workflow-item>
+  <workflow-item name="item2" out-name="item6" type="task" script-module="com.vmware.library.util/dumpProperties">
+    <display-name><![CDATA[Log input parameters]]></display-name>
+    <script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+System.getModule("com.vmware.library.util").dumpProperties(props,lvl) ;]]></script>
+    <in-binding>
+      <bind name="props" type="Properties" export-name="inputProperties"/>
+      <bind name="lvl" type="number" explicitly-not-bound="true" export-name="NULL"/>
+    </in-binding>
+    <out-binding/>
+    <position y="55.90909090909091" x="205.0"/>
+  </workflow-item>
+  <workflow-item name="item0" out-name="item7" type="task" script-module="com.vmware.library.jira/createJiraIssue">
+    <display-name><![CDATA[createJiraIssue]]></display-name>
+    <script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.library.jira").createJiraIssue(summary,description,createIssueTmpl,jiraHost,projectId,reporter,issueType,label) ;]]></script>
+    <in-binding>
+      <bind name="summary" type="string" export-name="jiraSummary"/>
+      <bind name="description" type="string" export-name="jiraDescription"/>
+      <bind name="createIssueTmpl" type="ResourceElement" export-name="createIssueTmpl"/>
+      <bind name="jiraHost" type="REST:RESTHost" export-name="jiraHost"/>
+      <bind name="projectId" type="string" export-name="jiraProjectKey"/>
+      <bind name="reporter" type="string" export-name="reporter"/>
+      <bind name="issueType" type="string" export-name="jiraIssueTypeId"/>
+      <bind name="label" type="string" export-name="label"/>
+    </in-binding>
+    <out-binding>
+      <bind name="actionResult" type="Properties" export-name="createIssueResult"/>
+    </out-binding>
+    <position y="55.90909090909091" x="545.0"/>
+  </workflow-item>
+  <workflow-item name="item1" out-name="item4" type="link" linked-workflow-id="2393b120-620e-4643-adce-b199c8ce471e">
+    <display-name><![CDATA[Wait for JIRA approval]]></display-name>
+    <in-binding>
+      <bind name="jiraId" type="string" export-name="jiraKey"/>
+      <bind name="jiraHost" type="REST:RESTHost" export-name="jiraHost"/>
+    </in-binding>
+    <out-binding/>
+    <position y="55.90909090909091" x="845.0"/>
+  </workflow-item>
+  <presentation>
+    <p-param name="inputProperties">
+      <desc><![CDATA[inputProperties]]></desc>
+    </p-param>
+  </presentation>
+</workflow>

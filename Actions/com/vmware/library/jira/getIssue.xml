@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dunes-script-module name="getIssue" result-type="Properties" api-version="6.0.0" id="0752aef1-6f92-4e67-aa40-bda716cc8051" version="0.0.0" allowed-operations="evf" category-name="com.vmware.library.jira">
+  <param n="jiraId" t="string"><![CDATA[]]></param>
+  <param n="jiraHost" t="REST:RESTHost"><![CDATA[]]></param>
+  <script encoded="false"><![CDATA[var request = jiraHost.createRequest("GET", "/rest/api/2/issue/" + jiraId, null);
+System.log("request: " + request.fullUrl);
+if (jiraHost.authentication.type == "OAuth 2.0") {
+	request.setHeader('Cookie' , 'auth-openid='+jiraHost.authentication.getRawAuthProperty(0))
+	}
+var response = request.execute();
+System.log("statusCode: " + response.statusCode);
+System.debug("response: " + response.contentAsString);
+result = new Properties();
+result.put("statusCode", response.statusCode);
+result.put("contentLength", response.contentLength);
+result.put("headers", response.getAllHeaders());
+result.put("contentAsString", response.contentAsString);
+
+return result]]></script>
+</dunes-script-module>

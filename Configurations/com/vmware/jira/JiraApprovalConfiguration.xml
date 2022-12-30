@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config-element id="2c82c485-826f-48b4-af14-72c3a03df574" version="0.0.0">
+  <display-name><![CDATA[JiraApprovalConfiguration]]></display-name>
+  <atts>
+    <att name="jiraHost" type="REST:RESTHost" read-only="false">
+      <value encoded="n"><![CDATA[dunes://service.dunes.ch/CustomSDKObject?id='8e39b827-d264-475c-a3da-4a0d37e939bf'&dunesName='REST:RESTHost']]></value>
+    </att>
+    <att name="jiraProjectKey" type="string" read-only="false">
+      <value encoded="n"><![CDATA[VRO]]></value>
+    </att>
+    <att name="jiraIssueType" type="string" read-only="false">
+      <value encoded="n"><![CDATA[Task]]></value>
+    </att>
+    <att name="jiraIssueRejectedState" type="string" read-only="false">
+      <value encoded="n"><![CDATA[Rejected]]></value>
+    </att>
+    <att name="jiraIssueApprovedState" type="string" read-only="false">
+      <value encoded="n"><![CDATA[Approved]]></value>
+    </att>
+  </atts>
+</config-element>

@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<workflow xmlns="http://vmware.com/vco/workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://vmware.com/vco/workflow http://vmware.com/vco/workflow/Workflow-v4.xsd" root-name="item1" object-name="workflow:name=generic" id="2393b120-620e-4643-adce-b199c8ce471e" version="0.0.3" api-version="6.0.0" allowed-operations="evf" restartMode="1" resumeFromFailedMode="0">
+  <display-name><![CDATA[JIRA - Wait on issue status]]></display-name>
+  <description><![CDATA[Wait  till JIRA issue reaches preconfigured status (APPROVED or REJECTED)]]></description>
+  <position y="50.0" x="100.0"/>
+  <input>
+    <param name="jiraId" type="string"/>
+    <param name="jiraHost" type="REST:RESTHost"/>
+  </input>
+  <attrib name="jiraIssueResp" type="Properties" read-only="false">
+    <value encoded="n"><![CDATA[__NULL__]]></value>
+  </attrib>
+  <attrib name="timerDate" type="Date" read-only="false">
+    <value encoded="n"><![CDATA[__NULL__]]></value>
+    <description><![CDATA[This timer item will wait until date and will continue workflow execution.]]></description>
+  </attrib>
+  <attrib name="jiraApprovedState" type="string" read-only="false" conf-id="2c82c485-826f-48b4-af14-72c3a03df574" conf-key="jiraIssueApprovedState">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <attrib name="jiraRejectedState" type="string" read-only="false" conf-id="2c82c485-826f-48b4-af14-72c3a03df574" conf-key="jiraIssueRejectedState">
+    <value encoded="n"><![CDATA[]]></value>
+  </attrib>
+  <workflow-item name="item1" out-name="item2" type="task" script-module="com.vmware.library.jira/getIssue">
+    <display-name><![CDATA[getIssue]]></display-name>
+    <script encoded="false"><![CDATA[//Auto generated script, cannot be modified !
+actionResult = System.getModule("com.vmware.library.jira").getIssue(jiraId, jiraHost) ;]]></script>
+    <in-binding>
+      <bind name="jiraId" type="string" export-name="jiraId"/>
+      <bind name="jiraHost" type="REST:RESTHost" export-name="jiraHost"/>
+    </in-binding>
+    <out-binding>
+      <bind name="actionResult" type="Properties" export-name="jiraIssueResp"/>
+    </out-binding>
+    <position y="55.40909090909091" x="204.5"/>
+  </workflow-item>
+  <workflow-item name="item2" out-name="item6" type="custom-condition" alt-out-name="item5">
+    <display-name><![CDATA[Waiting for approval?]]></display-name>
+    <script encoded="false"><![CDATA[
+if (jiraIssueResp && jiraIssueResp.get("statusCode") == 200) {
+	jiraIssue = JSON.parse(jiraIssueResp.get("contentAsString"))
+	System.log(jiraIssue)
+	System.log("\"" + jiraIssue.fields.summary + "\" status[" + jiraIssue.fields.status.name + "] statusId[" +jiraIssue.fields.status.id+ "]");
+	status = jiraIssue.fields.status.name
+
+	if ( status == jiraApprovedState || status == jiraRejectedState) {
+		return false
+	} 
+}
+
+return true
+]]></script>
+    <in-binding>
+      <bind name="jiraApprovedState" type="string" export-name="jiraApprovedState"/>
+      <bind name="jiraIssueResp" type="Properties" export-name="jiraIssueResp"/>
+      <bind name="jiraRejectedState" type="string" export-name="jiraRejectedState"/>
+    </in-binding>
+    <position y="45.40909090909091" x="365.0"/>
+  </workflow-item>
+  <workflow-item name="item3" type="end" end-mode="0">
+    <position y="45.40909090909091" x="705.0"/>
+  </workflow-item>
+  <workflow-item name="item4" out-name="item1" type="waiting-timer">
+    <display-name><![CDATA[Waiting timer]]></display-name>
+    <in-binding>
+      <bind name="timer.date" type="Date" export-name="timerDate">
+        <description><![CDATA[This timer item will wait until date and will continue workflow execution.]]></description>
+      </bind>
+    </in-binding>
+    <position y="118.13636363636363" x="224.5"/>
+  </workflow-item>
+  <workflow-item name="item5" out-name="item3" type="task">
+    <display-name><![CDATA[Issue approved?]]></display-name>
+    <script encoded="false"><![CDATA[jiraIssue = JSON.parse(jiraIssueResp.get("contentAsString"))
+System.log(jiraIssue.fields.summary + " status " + jiraIssue.fields.status.name + " resolution  " + jiraIssue.fields.resolution);
+
+if (jiraIssue.fields.status.name != jiraApprovedState) {
+   throw "Request  rejected! \"" + jiraIssue.fields.summary +"\" !"
+} ]]></script>
+    <in-binding>
+      <bind name="jiraIssueResp" type="Properties" export-name="jiraIssueResp"/>
+      <bind name="jiraApprovedState" type="string" export-name="jiraApprovedState"/>
+      <bind name="jiraRejectedState" type="string" export-name="jiraRejectedState"/>
+    </in-binding>
+    <out-binding/>
+    <position y="55.40909090909091" x="525.0"/>
+  </workflow-item>
+  <workflow-item name="item6" out-name="item4" type="task">
+    <display-name><![CDATA[next check]]></display-name>
+    <script encoded="false"><![CDATA[timerDate = new Date();
+timerDate.setTime( timerDate.getTime() + (5 * 1000) );
+System.debug( "Timer will expire at '" + timerDate + "'" );]]></script>
+    <in-binding/>
+    <out-binding>
+      <bind name="timerDate" type="Date" export-name="timerDate"/>
+    </out-binding>
+    <position y="128.13636363636363" x="364.5"/>
+  </workflow-item>
+  <presentation>
+    <p-param name="jiraId">
+      <desc><![CDATA[jiraId]]></desc>
+    </p-param>
+    <p-param name="jiraHost">
+      <desc><![CDATA[jiraHost]]></desc>
+    </p-param>
+  </presentation>
+</workflow>
